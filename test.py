@@ -8,11 +8,17 @@ from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.uix.floatlayout import FloatLayout
 from kivymd.uix.dialog import MDDialog
 from kivy.uix.relativelayout import RelativeLayout
+from flask import Flask, jsonify, request
+import sqlite3
+
 import cv2
 import sqlite3
 
 x = ""
 screen_width, screen_height = (400, 100)
+
+app = Flask(__name__)
+DATABASE = 'DB_workhour.db'
 
 class LoginScreen(Screen):
     def __init__(self, **kwargs):
@@ -44,6 +50,11 @@ class LoginScreen(Screen):
 
         self.add_widget(layout)
 
+    def get_db_connection(self):
+        conn = sqlite3.connect(DATABASE)
+        return conn
+
+    @app.route('/api/data', methods=['GET'])
     def check_login(self, instance):
         login_input = self.children[0].children[3]
         password_input = self.children[0].children[1]
@@ -53,9 +64,9 @@ class LoginScreen(Screen):
         password = password_input.text
         print(password)
 
-        conn = sqlite3.connect('work_time_tracking.db')
+        conn = self.get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT Контактные_данные FROM Сотрудники WHERE Логин=? AND Пароль=?", (login, password))
+        cursor.execute("SELECT full_name FROM Employees WHERE Username=? AND password=?", (login, password))
         user = cursor.fetchone()
         print(user)
 
@@ -145,12 +156,13 @@ class QR_Screen(Screen):
             buf = buf1.tostring()
             self.camera_widget.texture = buf
 
-    def update_database(self, data):
-        url = "http://192.168.1.6:5000/"
-        payload = {'data': data}
-        response = requests.post(url, json=payload)
-        if response.status_code == 200:
-            print("Data successfully sent to the database")
+    # Необходимо добавить функцию считывающую данные с QR кода
+
+
+
+    # Подключить обмен данных через фласк
+
+
 
 class TestApp(MDApp):
     def build(self):
